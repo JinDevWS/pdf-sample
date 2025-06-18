@@ -8,7 +8,7 @@ export default function SvgEditor() {
   const [form, setForm] = useState({
     sender: "",
     recipient: "",
-    title: "내용증명",
+    title: "내용증명1",
     content: [
       "귀하의 무궁한 발전을 기원합니다.",
       "본 발신인은 귀하에게 아래와 같이 돈을 빌려주었습니다.",
