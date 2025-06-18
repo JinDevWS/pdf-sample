@@ -1,0 +1,8 @@
+[build]
+  publish = "dist"
+
+[context.production]
+  command = "npm run build"  # main 브랜치 push 시 prod 빌드
+
+[context.deploy-preview]
+  command = "npm run build:dev"  # PR Preview 시 dev 빌드
