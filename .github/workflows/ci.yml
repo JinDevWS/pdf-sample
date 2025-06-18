@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  # --------------------------------------------------
+  # 병합 충돌 체크 (PR에서만 실행됨)
+  # --------------------------------------------------
+  check-merge:
+    if: github.event_name == 'pull_request'
+    name: Check Merge Conflicts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Try merging with base branch
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git checkout -b test-merge
+          git merge origin/${{ github.base_ref }} --no-commit --no-ff || {
+            echo "Merge conflict detected!";
+            exit 1;
+          }
+
+  # --------------------------------------------------
+  # 공통 빌드/검사 작업 (push + PR 둘 다 실행됨)
+  # --------------------------------------------------
+  build:
+    name: Install, Lint, Build
+    runs-on: ubuntu-latest
+
+    # PR이면 병합 확인 이후 실행되도록, push는 바로 실행됨
+    needs: [check-merge]
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      # - name: Run tests
+      #   run: npm test
